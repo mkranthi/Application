@@ -1,3 +1,3 @@
 FROM centos:7
-RUN cat /tmp/sample
+RUN touch /tmp/sample
 ENTRYPOINT [echo "hello world"]
