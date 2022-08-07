@@ -1,4 +1,4 @@
 {
-	"ipaddress":"172.31.27.173"
-	"user_name":"ec2-user"
+	"ip":"172.31.27.173"
+	"name":"ec2-user"
 }
