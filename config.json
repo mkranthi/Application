@@ -1,4 +1,12 @@
 {
-	"ip":"172.31.27.173"
-	"name":"ec2-user"
+        "dev":{
+                "name": "development",
+                "ip": "172.31.27.173",
+                "fruit": "apple"
+        },
+        "test":{
+                "name": "testenv",
+                "ip":"172.31.17.203",
+                "fruit": "banana"
+        }
 }
