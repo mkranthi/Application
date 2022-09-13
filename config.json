@@ -8,5 +8,10 @@
                 "name": "testenv",
                 "ip":"172.31.17.203",
                 "fruit": "banana"
-        }
+        },
+        "prod":{
+                "name": "prodenv",
+                "ip":"172.31.45.227",
+                "fruit": "mango"
+        },
 }
