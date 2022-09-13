@@ -13,5 +13,5 @@
                 "name": "prodenv",
                 "ip":"172.31.45.227",
                 "fruit": "mango"
-        },
+        }
 }
