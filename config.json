@@ -13,5 +13,11 @@
                 "name": "prodenv",
                 "ip":"172.31.45.227",
                 "fruit": "mango"
+        },
+        "dev1":{
+                "name": "dev1env",
+                "ip":"172.31.1.46",
+                "fruit": "grapes"
         }
+        
 }
