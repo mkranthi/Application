@@ -1,0 +1,23 @@
+{
+        "dev":{
+                "name": "development",
+                "ip": "172.31.27.173",
+                "fruit": "apple"
+        },
+        "test":{
+                "name": "testenv",
+                "ip":"172.31.17.203",
+                "fruit": "banana"
+        },
+        "prod":{
+                "name": "prodenv",
+                "ip":"172.31.45.227",
+                "fruit": "mango"
+        },
+        "dev1":{
+                "name": "dev1env",
+                "ip":"172.31.1.46",
+                "fruit": "grapes"
+        }
+        
+}
