@@ -1,0 +1,186 @@
+pipeline {
+  agent any
+  parameters {
+    choice(name: 'select_environment', choices: ['dev', 'test', 'prod','dev1'], description: 'Choose one')
+    gitParameter branchFilter: 'origin/(.*)', defaultValue: 'main', name: 'BRANCH', type: 'PT_BRANCH', useRepository: '.*docker-repo.git'
+   /// environment {
+      //develop= 'develop'
+      //test='test'
+      //prod='prod'
+     //}
+  }
+  stages {
+    stage('Example') {
+      steps {
+         echo "Branch Choice: ${params.select_environment}"
+        git branch: "${params.BRANCH}", url: 'https://github.com/mkranthi/docker-repo.git'
+      }
+    }
+    stage('selcet environment'){
+        steps{
+            script{
+            if (env.select_environment == 'dev1'){
+                echo ' hello from dev1 '
+                script {
+                    sh '''
+                    #!/bin/bash
+                    config=$(jq '.dev1.ip' docker-project/config.json | sed 's/"//g')
+                    echo $config
+                    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+                    sudo yum install -y yum-utils
+                    sudo yum-config-manager \
+                    --add-repo \
+                    https://download.docker.com/linux/centos/docker-ce.repo
+                    sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+                    sudo usermod -aG docker ec2-user
+                    sudo  systemctl restart sshd
+		    sudo systemctl start docker
+                    sudo chmod 666 /var/run/docker.sock
+                    docker login https://itsolidev.jfrog.io/ -u kranthi.m -p Devops@1
+                    docker pull itsolidev.jfrog.io/itsol-docker-develop-local/docker_image
+                    docker images
+                    exit 0
+                    << EOF
+                    '''
+                    sh '''
+		    #!/bin/bash
+                    config=$(jq '.dev1.ip' docker-project/config.json | sed 's/"//g')
+		    scp -i /tmp/id_rsa -o StrictHostKeyChecking=no -r /var/lib/jenkins/workspace/docker-project/deploy-app/docker-project ec2-user@$config:/home/ec2-user/docker-container1
+		    '''
+		    sh '''
+		    #!/bin/bash
+                    config=$(jq '.dev1.ip' docker-project/config.json | sed 's/"//g')
+		    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+		    cd /home/ec2-user/docker-container1 
+		    docker compose up -d
+		    exit 0
+                    << EOF
+		    '''
+                }
+            }                      
+            if (env.select_environment == 'dev'){
+                echo ' hello from dev'
+                script {
+                    sh '''
+                    #!/bin/bash
+                    config=$(jq '.dev.ip' docker-project/config.json | sed 's/"//g')
+                    echo $config
+                    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+		    sudo yum install -y yum-utils
+                    sudo yum-config-manager \
+                    --add-repo \
+                    https://download.docker.com/linux/centos/docker-ce.repo
+                    sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+                    sudo usermod -aG docker ec2-user
+                    sudo  systemctl restart sshd
+		    sudo systemctl start docker
+                    sudo chmod 666 /var/run/docker.sock
+                    touch dev1.ip
+                    docker login https://itsolidev.jfrog.io/ -u kranthi.m -p Devops@1
+                    docker pull itsolidev.jfrog.io/itsol-docker-develop-local/docker_image
+                    docker image
+                    exit 0
+                    << EOF
+                    '''
+                    sh '''
+		    #!/bin/bash
+                    config=$(jq '.dev.ip' docker-project/config.json | sed 's/"//g')
+		    scp -i /tmp/id_rsa -o StrictHostKeyChecking=no -r /var/lib/jenkins/workspace/docker-project/deploy-app/docker-project ec2-user@$config:/home/ec2-user/docker-container1
+		    '''
+		    sh '''
+		    #!/bin/bash
+                    config=$(jq '.dev.ip' docker-project/config.json | sed 's/"//g')
+		    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+		    cd /home/ec2-user/docker-container1 
+		    docker compose up -d
+		    exit 0
+                    << EOF
+		    '''
+                }
+            }
+            if (env.select_environment == 'test'){
+                echo ' hello from test'
+                script {
+                    sh '''
+                    #!/bin/bash
+                    config=$(jq '.test.ip' docker-project/config.json | sed 's/"//g')
+                    echo $config
+                    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+                    sudo yum install -y yum-utils
+                    sudo yum-config-manager \
+                    --add-repo \
+                    https://download.docker.com/linux/centos/docker-ce.repo
+                    sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+                    sudo usermod -aG docker ec2-user
+                    sudo  systemctl restart sshd
+		    sudo systemctl start docker
+                    sudo chmod 666 /var/run/docker.sock
+                    docker login https://itsolidev.jfrog.io/ -u kranthi.m -p Devops@1
+                    docker pull itsolidev.jfrog.io/itsol-docker-develop-local/docker_image
+                    docker images
+                    exit 0
+                    << EOF
+                    '''
+                    sh '''
+		    #!/bin/bash
+                    config=$(jq '.test.ip' docker-project/config.json | sed 's/"//g')
+		    scp -i /tmp/id_rsa -o StrictHostKeyChecking=no -r /var/lib/jenkins/workspace/docker-project/deploy-app/docker-project ec2-user@$config:/home/ec2-user/docker-container1
+		    '''
+		    sh '''
+		    #!/bin/bash
+                    config=$(jq '.test.ip' docker-project/config.json | sed 's/"//g')
+		    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+		    cd /home/ec2-user/docker-container1 
+		    docker compose up -d
+		    exit 0
+                    << EOF
+		    '''
+                }
+            }
+            if (env.select_environment == 'prod'){
+                echo ' hello from prod'
+                script {
+                    sh '''
+                    #!/bin/bash
+                    config=$(jq '.prod.ip' config.json | sed 's/"//g')
+                    echo $config
+                    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+                    sudo yum install -y yum-utils
+                    sudo yum-config-manager \
+                    --add-repo \
+                    https://download.docker.com/linux/centos/docker-ce.repo
+                    sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+                    sudo usermod -aG docker ec2-user
+                    sudo  systemctl restart sshd
+		    sudo systemctl start docker
+                    sudo chmod 666 /var/run/docker.sock
+                    docker login https://itsolidev.jfrog.io/ -u kranthi.m -p Devops@1
+                    docker pull itsolidev.jfrog.io/itsol-docker-develop-local/docker_image
+                    docker images
+		    mkdir docker-container
+                    exit 0
+                    << EOF
+                    '''
+		    sh '''
+		    #!/bin/bash
+                    config=$(jq '.prod.ip' config.json | sed 's/"//g')
+		    scp -i /tmp/id_rsa -o StrictHostKeyChecking=no -r /var/lib/jenkins/workspace/docker-pipeline ec2-user@$config:/home/ec2-user/docker-container
+		    '''
+		    sh '''
+		    #!/bin/bash
+                    config=$(jq '.prod.ip' config.json | sed 's/"//g')
+		    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+		    cd /home/ec2-user/docker-container
+		    docker compose up -d
+		    exit 0
+                    << EOF
+		    '''
+                }
+            } else {
+                        sh "echo 'Hello from ${env.BRANCH_NAME} branch!'"
+                        }
+        }     
+    }
+        }
+  }
+}
