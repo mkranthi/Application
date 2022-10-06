@@ -1,0 +1,165 @@
+Skip to content
+Search or jump to…
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@mkranthi 
+mkranthi
+/
+app
+Public
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security
+Insights
+Settings
+app/docker-project/jenkinsfile1
+@mkranthi
+mkranthi Update jenkinsfile1
+Latest commit 7985d7c 5 minutes ago
+ History
+ 1 contributor
+142 lines (141 sloc)  5.92 KB
+
+pipeline {
+  agent any
+  parameters {
+    choice(name: 'select_environment', choices: ['dev', 'test', 'prod','dev1'], description: 'Choose one')
+    gitParameter branchFilter: 'origin/(.*)', defaultValue: 'main', name: 'BRANCH', type: 'PT_BRANCH', useRepository: '.*app.git'
+   /// environment {
+      //develop= 'develop'
+      //test='test'
+      //prod='prod'
+     //}
+  }
+  stages {
+    stage('Example') {
+      steps {
+         echo "Branch Choice: ${params.select_environment}"
+        git branch: "${params.BRANCH}", url: 'https://github.com/mkranthi/app.git'
+      }
+    }
+    stage('selcet environment'){
+        steps{
+            script{
+            if (env.select_environment == 'dev1'){
+                echo ' hello from dev1 '
+                script {
+                    sh '''
+                    #!/bin/bash
+                    config=$(jq '.dev1.ip' docker-project/config.json | sed 's/"//g')
+                    echo $config
+                    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+                    sudo yum install -y yum-utils
+                    sudo yum-config-manager \
+                    --add-repo \
+                    https://download.docker.com/linux/centos/docker-ce.repo
+                    sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+                    sudo usermod -aG docker ec2-user
+                    sudo  systemctl restart sshd
+		    sudo systemctl start docker
+                    sudo chmod 666 /var/run/docker.sock
+                    docker login https://itsolidev.jfrog.io/ -u kranthi.m -p Devops@1
+                    docker pull itsolidev.jfrog.io/itsol-docker-dev-local/new_image
+                    docker images
+                    docker compose up .
+                    exit 0
+                    << EOF
+                    '''
+                }
+            }                      
+            if (env.select_environment == 'dev'){
+                echo ' hello from dev'
+                script {
+                    sh '''
+                    #!/bin/bash
+                    config=$(jq '.dev.ip' docker-project/config.json | sed 's/"//g')
+                    echo $config
+                    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+		    sudo yum install -y yum-utils
+                    sudo yum-config-manager \
+                    --add-repo \
+                    https://download.docker.com/linux/centos/docker-ce.repo
+                    sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+                    sudo usermod -aG docker ec2-user
+                    sudo  systemctl restart sshd
+		    sudo systemctl start docker
+                    sudo chmod 666 /var/run/docker.sock
+                    touch dev1.ip
+                    docker login https://itsolidev.jfrog.io/ -u kranthi.m -p Devops@1
+                    docker pull itsolidev.jfrog.io/itsol-docker-dev-local/new_image
+                    docker images
+		    docker compose up .
+                    exit 0
+                    << EOF
+                    '''
+                }
+            }
+            if (env.select_environment == 'test'){
+                echo ' hello from dev'
+                script {
+                    sh '''
+                    #!/bin/bash
+                    config=$(jq '.test.ip' docker-project/config.json | sed 's/"//g')
+                    echo $config
+                    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+                    sudo yum install -y yum-utils
+                    sudo yum-config-manager \
+                    --add-repo \
+                    https://download.docker.com/linux/centos/docker-ce.repo
+                    sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+                    sudo usermod -aG docker ec2-user
+                    sudo  systemctl restart sshd
+		    sudo systemctl start docker
+                    sudo chmod 666 /var/run/docker.sock
+                    docker login https://itsolidev.jfrog.io/ -u kranthi.m -p Devops@1
+                    docker pull itsolidev.jfrog.io/itsol-docker-dev-local/new_image
+                    docker images
+                    docker compose up .
+                    exit 0
+                    << EOF
+                    '''
+                }
+            }
+            if (env.select_environment == 'prod'){
+                echo ' hello from dev'
+                script {
+                    sh '''
+                    #!/bin/bash
+                    config=$(jq '.prod.ip' docker-project/config.json | sed 's/"//g')
+                    echo $config
+                    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+                    sudo yum install -y yum-utils
+                    sudo yum-config-manager \
+                    --add-repo \
+                    https://download.docker.com/linux/centos/docker-ce.repo
+                    sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+                    sudo usermod -aG docker ec2-user
+                    sudo  systemctl restart sshd
+		    sudo systemctl start docker
+                    sudo chmod 666 /var/run/docker.sock
+                    docker login https://itsolidev.jfrog.io/ -u kranthi.m -p Devops@1
+                    docker pull itsolidev.jfrog.io/itsol-docker-dev-local/new_image
+                    docker images
+                    docker compose up .
+                    exit 0
+                    << EOF
+                    '''
+                 sh ' scp -i /tmp/id_rsa -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/docker-project/deploy-app ec2-user@$config:. ''
+                }
+	
+            }
+            else {
+                        sh "echo 'Hello from ${env.BRANCH_NAME} branch!'"
+                        }
+        }     
+    }
+        }
+  }
+}
