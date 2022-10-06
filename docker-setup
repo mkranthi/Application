@@ -1,0 +1,54 @@
+pipeline {
+  agent any
+  parameters {
+    choice(name: 'select_environment', choices: ['dev', 'test', 'prod'], description: 'Choose one')
+    gitParameter branchFilter: 'origin/(.*)', defaultValue: 'main', name: 'BRANCH', type: 'PT_BRANCH', useRepository: '.*Application.git'
+   /// environment {
+      //develop= 'develop'
+      //test='test'
+      //prod='prod'
+     //}
+  }
+  stages {
+    stage('Example') {
+      steps {
+         echo "Branch Choice: ${params.select_environment}"
+        git branch: "${params.BRANCH}", url: 'https://github.com/mkranthi/Application.git'
+      }
+    }
+    stage('selcet environment'){
+        steps{
+            script{
+            if (env.select_environment == 'dev'){
+                echo ' hello from dev '
+                script {
+                    sh """
+                    #!/bin/bash
+                    ssh -i /tmp/id_rsa ec2-user@172.31.27.173 -o StrictHostKeyChecking=no  << EOF
+                    sudo yum install -y yum-utils
+                    sudo yum-config-manager \
+                    --add-repo \
+                    https://download.docker.com/linux/centos/docker-ce.repo
+                    sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+                    sudo systemctl start docker
+                    exit 0
+                    << EOF
+                    """
+                }
+                script {
+                    sh """ 
+                    scp -i /tmp/id_rsa  -o StrictHostKeyChecking=no  /var/lib/jenkins/workspace/develop/fourthfile ec2-user@172.31.27.173:.
+                    """
+                }
+            }                      
+            if (env.select_environment == 'test'){
+                echo ' hello from'
+            }
+            else {
+                        sh "echo 'Hello from ${env.BRANCH_NAME} branch!'"
+                        }
+        }     
+    }
+         }
+  }
+}
