@@ -1,0 +1,29 @@
+pipeline {
+    agent any
+    parameters {
+        gitParameter name: 'TAG',
+                     type: 'PT_TAG',
+                     defaultValue: 'main'
+    }
+    stages {
+            steps{ 
+            stage('Checkout') {
+                script {
+                    git branch: 'params.Branch', credentialsId: 'githubcred', url: 'https://github.com/kranti-org/itsol-noc-docker.git'
+                    }
+            }
+        }
+        stage('Example') {
+            steps {
+                checkout([$class: 'GitSCM',
+                          branches: [[name: "${params.TAG}"]],
+                          doGenerateSubmoduleConfigurations: false,
+                          extensions: [],
+                          gitTool: 'Default',
+                          submoduleCfg: [],
+                          userRemoteConfigs: [[url: 'https://github.com/kranti-org/itsol-noc-docker.git']]
+                        ])
+            }
+        }
+    }
+}
