@@ -1,0 +1,27 @@
+
+pipeline {
+    agent any
+    stages {
+        stage('Hello') {
+            steps {
+                git branch: 'feature', url: "https://github.com/mkranthi/Application.git"
+            }
+        }
+        stage('ssh to dev'){
+            steps {
+                script {
+                    sh '''
+                    #!/bin/bash
+                    config=$(jq '.dev.ip' config.json | cut -c 2-14)
+                    echo $config
+                    ssh -i /tmp/id_rsa ec2-user@$config -o StrictHostKeyChecking=no << EOF
+                    docker login https://itsolidev.jfrog.io/ -u kranthi.m -p Devops@1
+                    docker pull itsolidev.jfrog.io/itsol-docker-dev-local/first_image:latest
+                    exit 0 
+                    << EOF
+                    '''
+                }
+            }
+        }
+    }    
+}
