@@ -1,0 +1,32 @@
+
+pipeline {
+    agent any
+    stages {
+        stage('Hello') {
+            steps {
+                git branch: 'feature', url: "https://github.com/mkranthi/Application.git"
+                
+            }
+        }
+         stage('Hlo') {
+             steps{
+            script {
+                    def data = readFile(file: 'variable.txt');
+                    foo = (data.trim())
+                    println(foo)
+                }
+            }
+
+        }
+        stage('ssh to dev'){
+            steps {
+                script {
+                    def data = readFile(file: 'variable.txt'); 
+                    sh '''
+                    #!/bin/bash
+                    ssh -i /tmp/id_rsa ec2-user@'''+foo+''' -o StrictHostKeyChecking=no uname -a; exit 0'''
+                }
+            }
+        }
+    }    
+}
